@@ -1,0 +1,5 @@
+version=1
+title=Shared Map
+description=Areas explored by one player are revealed for everyone on the server.
+tags=
+visibility=private

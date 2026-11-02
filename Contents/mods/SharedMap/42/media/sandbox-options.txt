@@ -1,0 +1,7 @@
+VERSION = 1,
+
+option SharedMap.Enabled
+{
+	type = boolean, default = true,
+	page = SharedMap, translation = SharedMap_Enabled,
+}

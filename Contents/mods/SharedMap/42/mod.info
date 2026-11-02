@@ -1,0 +1,7 @@
+name=Shared Map
+id=SharedMap
+description=Map areas discovered by one player are revealed for everyone on the server.
+author=factory51
+versionMin=42.0.0
+poster=poster.png
+icon=icon.png
