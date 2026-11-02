@@ -47,16 +47,36 @@ end
 local function onServerCommand(module, command, args)
     if module ~= MODULE or command ~= "reveal" then return end
     local map = WorldMapVisited.getInstance()
-    for _, run in ipairs(args.runs) do
+    for _, r in ipairs(args.rects or {}) do
+        map:setKnownInSquares(r[1], r[2], r[3], r[4])
+    end
+    for _, run in ipairs(args.runs or {}) do
         local ux, uy, count = run[1], run[2], run[3]
         map:setKnownInSquares(ux * UNIT, uy * UNIT, (ux + count) * UNIT - 1, (uy + 1) * UNIT - 1)
     end
-    log("revealed " .. #args.runs .. " runs")
+    log("revealed " .. #(args.runs or {}) .. " runs, " .. #(args.rects or {}) .. " rects")
 end
 
 local function onGameStart()
     local player = getSpecificPlayer(0)
     if player then sendClientCommand(player, MODULE, "request", {}) end
+end
+
+-- When the player opens a paper map, vanilla reveals its area on their own world map
+-- (ISMap:initMapData). Report that area too so the server can share it, if enabled.
+if ISMap and ISMap.initMapData then
+    local vanillaInit = ISMap.initMapData
+    function ISMap:initMapData(...)
+        vanillaInit(self, ...)
+        local opts = SandboxVars.SharedMap
+        if not (opts and opts.Enabled and opts.ShareMaps) then return end
+        local api = self.mapAPI
+        sendClientCommand(self.character, MODULE, "reportMap", { rects = { {
+            api:getMinXInSquares(), api:getMinYInSquares(),
+            api:getMaxXInSquares(), api:getMaxYInSquares(),
+        } } })
+        log("reported paper map area")
+    end
 end
 
 Events.OnTick.Add(onTick)

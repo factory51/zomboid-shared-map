@@ -4,7 +4,7 @@ Map areas walked by one player are revealed on every player's world map on the s
 
 - Clients report newly walked map units (32x32 squares) near the player; the server merges them
   into global ModData and broadcasts them. New joiners request the full set on game start.
-- Sandbox option (page "Shared Map"): turn sharing on or off.
+- Sandbox options (page "Shared Map"): sharing on or off; optionally also share areas revealed by reading paper maps (off by default).
 
 ## Status
 Loads cleanly on a dedicated server; multi-client behaviour is **untested**. Things to verify:

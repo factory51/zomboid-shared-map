@@ -5,3 +5,9 @@ option SharedMap.Enabled
 	type = boolean, default = true,
 	page = SharedMap, translation = SharedMap_Enabled,
 }
+
+option SharedMap.ShareMaps
+{
+	type = boolean, default = false,
+	page = SharedMap, translation = SharedMap_ShareMaps,
+}

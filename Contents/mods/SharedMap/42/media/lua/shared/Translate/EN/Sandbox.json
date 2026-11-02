@@ -1,4 +1,5 @@
 {
 	"Sandbox_SharedMap": "Shared Map",
-	"Sandbox_SharedMap_Enabled": "Areas explored by any player are revealed on every player's map"
+	"Sandbox_SharedMap_Enabled": "Areas explored by any player are revealed on every player's map",
+	"Sandbox_SharedMap_ShareMaps": "Areas revealed by reading a paper map are also revealed for everyone"
 }

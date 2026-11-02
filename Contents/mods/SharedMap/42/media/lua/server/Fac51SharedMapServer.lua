@@ -5,15 +5,30 @@ local MODULE = "SharedMap"
 local DATA_KEY = "Fac51SharedMap"
 local MAX_CELLS_PER_MESSAGE = 200
 local MAX_RUNS_PER_MESSAGE = 400
+local MAX_RECTS_PER_MESSAGE = 8
 
 local function enabled()
     return not SandboxVars.SharedMap or SandboxVars.SharedMap.Enabled
 end
 
-local function store()
-    local data = ModData.getOrCreate(DATA_KEY)
-    data.cells = data.cells or {}
-    return data.cells
+local function data()
+    local d = ModData.getOrCreate(DATA_KEY)
+    d.cells = d.cells or {}
+    d.rects = d.rects or {}   -- areas revealed by paper maps, keyed "x1,y1,x2,y2"
+    return d
+end
+
+local function mapSharingEnabled()
+    return SandboxVars.SharedMap and SandboxVars.SharedMap.ShareMaps
+end
+
+local function sendRects(player, rects)
+    if #rects == 0 then return end
+    if player then
+        sendServerCommand(player, MODULE, "reveal", { rects = rects })
+    else
+        sendServerCommand(MODULE, "reveal", { rects = rects })
+    end
 end
 
 -- Turn a list of "ux,uy" keys into horizontal runs {ux, uy, count, ...} flattened.
@@ -61,9 +76,27 @@ end
 
 local function onClientCommand(module, command, player, args)
     if module ~= MODULE or not enabled() then return end
-    local cells = store()
+    local d = data()
+    local cells = d.cells
 
-    if command == "report" then
+    if command == "reportMap" then
+        if not mapSharingEnabled() then return end
+        local fresh = {}
+        local list = args.rects or {}
+        for i = 1, math.min(#list, MAX_RECTS_PER_MESSAGE) do
+            local r = list[i]
+            local x1, y1, x2, y2 = tonumber(r[1]), tonumber(r[2]), tonumber(r[3]), tonumber(r[4])
+            if x1 and y1 and x2 and y2 and x2 >= x1 and y2 >= y1 then
+                local key = x1 .. "," .. y1 .. "," .. x2 .. "," .. y2
+                if not d.rects[key] then
+                    d.rects[key] = { x1, y1, x2, y2 }
+                    table.insert(fresh, d.rects[key])
+                end
+            end
+        end
+        sendRects(nil, fresh)
+
+    elseif command == "report" then
         local added = {}
         local list = args.cells or {}
         for i = 1, math.min(#list, MAX_CELLS_PER_MESSAGE) do
@@ -83,6 +116,9 @@ local function onClientCommand(module, command, player, args)
         local keys = {}
         for key in pairs(cells) do table.insert(keys, key) end
         sendRuns(player, toRuns(keys))
+        local rects = {}
+        for _, r in pairs(d.rects) do table.insert(rects, r) end
+        sendRects(player, rects)
     end
 end
 
